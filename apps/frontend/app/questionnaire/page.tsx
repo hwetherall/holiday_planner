@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
 import type { GroupProfile } from '@fhp/shared';
+import HolidayLoading from '../components/HolidayLoading';
 
 const blank: GroupProfile = {
   groupId: 'A', members: [], homeAirports: [], budgetFlex: 'soft',
@@ -23,6 +24,7 @@ const VETO_OPTIONS = ['Long flights (8+ hrs)', 'Extreme heat (35°C+)', 'Extreme
 export default function Page(){
   const [profile, setProfile] = useState<GroupProfile>(blank);
   const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState(false);
   const [customVeto, setCustomVeto] = useState('');
   const [availableMonths, setAvailableMonths] = useState<string[]>([]);
   const [locationPrefs, setLocationPrefs] = useState<string[]>([]);
@@ -101,6 +103,7 @@ export default function Page(){
     };
 
     await api.post('/profile/upsert', { profile: updatedProfile });
+    setGenerating(true);
     try{
       // Immediately generate ideas so Rank page is ready
       await api.post('/cards/generate', {});
@@ -111,6 +114,7 @@ export default function Page(){
   }
 
   if(loading) return <main className="p-8">Loading…</main>;
+  if(generating) return <HolidayLoading />;
 
   return (
     <main className="max-w-2xl mx-auto py-8 space-y-8">

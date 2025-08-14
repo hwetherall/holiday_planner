@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
 import type { CandidateCard } from '@fhp/shared';
+import HolidayLoading from '../components/HolidayLoading';
 
 export default function Page(){
   const [cards, setCards] = useState<CandidateCard[]>([]);
@@ -47,7 +48,7 @@ export default function Page(){
     window.location.href = '/results';
   }
 
-  if(loading) return <main className="p-8">Preparing your cards…</main>;
+  if(loading) return <HolidayLoading />;
 
   return (
     <main className="max-w-5xl mx-auto py-8 space-y-6">
