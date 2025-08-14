@@ -1,16 +1,27 @@
 'use client';
 import { useState } from 'react';
 import { api, setToken } from '../lib/api';
+import PinInput from './components/PinInput';
 
 export default function Page(){
   const [groupCode, setGroupCode] = useState('HARRY');
   const [pin, setPin] = useState('');
-  const [token, setTok] = useState<string|undefined>();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   async function login(){
-    const r = await api.post('/auth/login', { groupCode, pin });
-    setTok(r.data.token); setToken(r.data.token);
-    window.location.href = '/questionnaire';
+    if(!groupCode || !pin || pin.length !== 4) return;
+    setLoading(true);
+    setError('');
+    try{
+      const r = await api.post('/auth/login', { groupCode, pin });
+      setToken(r.data.token);
+      window.location.href = '/questionnaire';
+    }catch(e: any){
+      setError(e.response?.data?.error || 'Login failed');
+    }finally{
+      setLoading(false);
+    }
   }
 
   return (
@@ -54,21 +65,26 @@ export default function Page(){
             
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700">Enter Your PIN</label>
-              <input 
+              <PinInput 
                 value={pin} 
-                onChange={e=>setPin(e.target.value)} 
-                inputMode="numeric" 
-                maxLength={4} 
-                placeholder="Enter 4-digit PIN"
-                className="holiday-input w-full text-center text-2xl tracking-widest" 
+                onChange={setPin} 
+                length={4}
+                className="mb-4"
               />
             </div>
             
+            {error && (
+              <div className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-lg">
+                {error}
+              </div>
+            )}
+            
             <button 
               onClick={login} 
-              className="holiday-button w-full text-lg py-4"
+              disabled={loading || pin.length !== 4}
+              className={`holiday-button w-full text-lg py-4 ${loading || pin.length !== 4 ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              🎉 Start Your Holiday Adventure
+              {loading ? '🔄 Logging in...' : '🎉 Start Your Holiday Adventure'}
             </button>
           </div>
           
