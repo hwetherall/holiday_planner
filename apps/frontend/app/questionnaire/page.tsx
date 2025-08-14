@@ -26,7 +26,7 @@ const LOCATION_TYPES = [
 const ACTIVITY_OPTIONS = [
   'Museums/Culture', 'Outdoor Adventures', 'Food & Dining', 'Nightlife', 'Shopping', 
   'Wildlife/Safaris', 'Water Sports', 'Hiking/Walking', 'Photography', 'Festivals/Events',
-  'Cycling', 'Sailing/boating', 'Theme parks', 'Local crafts/markets', 'Snorkeling/diving'
+  'Cycling', 'Sailing/boating', 'Theme parks', 'Local crafts/markets', 'Snorkeling/diving', 'Sports Events'
 ];
 
 const ACCOMMODATION_STYLES = [
@@ -78,8 +78,8 @@ export default function Page(){
     adventurousness > 0,
     locationPrefs.length > 0,
     activityPrefs.length > 0,
-    // Only count sporting preferences if Festivals/Events is selected
-    activityPrefs.includes('Festivals/Events') ? sportingPrefs.length > 0 : true,
+    // Only count sporting preferences if Sports Events is selected
+    activityPrefs.includes('Sports Events') ? sportingPrefs.length > 0 : true,
     budgetRange > 0,
     groupDynamics > 0,
     flexibility > 0,
@@ -123,8 +123,8 @@ export default function Page(){
     setActivityPrefs(prev => {
       const newPrefs = prev.includes(activity) ? prev.filter(a => a !== activity) : [...prev, activity];
       
-      // Clear sporting preferences if Festivals/Events is deselected
-      if (activity === 'Festivals/Events' && !newPrefs.includes('Festivals/Events')) {
+      // Clear sporting preferences if Sports Events is deselected
+      if (activity === 'Sports Events' && !newPrefs.includes('Sports Events')) {
         setSportingPrefs([]);
       }
       
@@ -445,8 +445,8 @@ export default function Page(){
           </div>
         </section>
 
-        {/* Sporting Events - Only show when Festivals/Events is selected */}
-        {activityPrefs.includes('Festivals/Events') && (
+        {/* Sporting Events - Only show when Sports Events is selected */}
+        {activityPrefs.includes('Sports Events') && (
           <section className="holiday-card rounded-2xl p-6 section-fade-in">
             <div className="flex items-center gap-3 mb-4">
               <span className="text-2xl">⚽</span>
@@ -541,7 +541,7 @@ export default function Page(){
             <span className="text-2xl">🚫</span>
             <label className="text-lg font-semibold">Deal-breakers (Select any that apply)</label>
           </div>
-          <div className="grid grid-cols-1 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             {VETO_OPTIONS.map(veto => (
               <label key={veto} className="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50 transition-colors">
                 <input 
