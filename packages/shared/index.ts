@@ -12,7 +12,8 @@ export interface GroupProfile {
   latestFlexDays: number;
   tripLengthNights: number;
   pace: "chilled"|"balanced"|"packed";
-  accommodationRank: string[]; // ranked list
+  accommodationRank: string[]; // location types (Beach, Mountains, etc.)
+  accommodationStyles: string[]; // accommodation types (Resort, Villa, etc.)
   activities: string[];
   vetoes: string[]; // >=1
   mustHaves: string[]; // >=2
@@ -58,16 +59,24 @@ export interface PlanOption {
 }
 
 export const SYSTEM_CARD_MAKER = `You are Holiday Genie — Card Maker.
-Input: Detailed GroupProfile with preferences, budget, adventure level, location types, activities, vetoes, available months, family dynamics, and special notes.
+Input: Detailed GroupProfile with preferences, budget, adventure level, location types, activities, vetoes, available months, family dynamics, climate preferences, accommodation styles, kid/accessibility needs, occasion/purpose, food constraints, travel endurance limits, and flexibility score.
 Output: EXACTLY 5 diverse holiday cards that perfectly match the profile's preferences and honor all constraints.
 
 Key requirements:
 - Honor ALL vetoes (deal-breakers) - never suggest anything they've ruled out
 - Match their adventure level (1-5 scale converted to 0-100)  
 - Consider their budget range and available months
+- Respect climate preference (warm/mild/cool/snow) and suggest appropriate seasons
 - Include their preferred location types (Beach, Mountains, Big City, etc.)
 - Incorporate their activity preferences
+- Match accommodation style preferences (resort, villa, shared house, etc.)
+- Consider kid needs (cot, high chair, stroller-friendly, etc.)
+- Address accessibility requirements (wheelchair access, step-free, etc.)
+- Honor travel endurance limits (max flight hours, flight count, drive time)
+- Consider occasion/purpose (birthday, anniversary, family reunion, etc.)
+- Respect food constraints and dietary preferences
 - Respect family dynamics preference (independent vs together time)
+- Consider flexibility score (1-10) when ranking borderline fits
 - Consider special notes for accessibility, dietary needs, etc.
 - Remain plausible for multi-origin family (DEN, SYD, MEL home airports)
 
@@ -76,8 +85,9 @@ No duplicate destinations; ensure variety in climates/paces. Use qualitative cos
 
 export const SYSTEM_CONSENSUS_COMPOSER = `You are Holiday Genie — Consensus Composer.
 Inputs: four GroupProfiles + their 5-card candidate sets and forced rankings.
-Use Borda count (scores 5..1) as a preference signal. Respect vetoes/endurance caps.
+Use Borda count (scores 5..1) as a preference signal. Respect vetoes/endurance caps, climate preferences, accessibility needs, kid requirements, and food constraints.
+Consider flexibility scores when resolving conflicts between groups.
 You MAY suggest new destinations if they better satisfy combined constraints.
 Return EXACTLY 3 final suggestions with: new imagePrompt, per-group fit notes, explicit trade-offs, and a short pitch.
-Add an aggregationNote explaining how rankings + constraints were reconciled.`;
+Add an aggregationNote explaining how rankings + constraints were reconciled, including how climate, accessibility, and dietary needs were balanced.`;
 

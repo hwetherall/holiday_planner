@@ -148,13 +148,21 @@ Focus on:
 - Available months: ${((p.profileJson as any).occasionGoals || []).join(', ')}
 - Budget range: ${(p.profileJson as any).budgetPerAdultUSD ? `$${(p.profileJson as any).budgetPerAdultUSD}` : 'flexible'}
 - Adventure level: ${(p.profileJson as any).riskTolerance}/100
+- Climate preference: ${(p.profileJson as any).climatePref || 'mild'}
 - Location preferences: ${((p.profileJson as any).accommodationRank || []).join(', ')}
 - Activities: ${((p.profileJson as any).activities || []).join(', ')}
+- Accommodation styles: ${((p.profileJson as any).accommodationStyles || []).join(', ')}
+- Kid needs: ${((p.profileJson as any).kidNeeds || []).join(', ')}
+- Accessibility needs: ${((p.profileJson as any).accessibilityNeeds || []).join(', ')}
+- Occasion/purpose: ${((p.profileJson as any).occasionGoals || []).join(', ')}
+- Food constraints: ${((p.profileJson as any).foodConstraints || []).join(', ')}
+- Travel endurance: Max ${(p.profileJson as any).travelEndurance?.maxFlightHrs || 'unlimited'}hrs flying, ${(p.profileJson as any).travelEndurance?.maxFlightCount || 'unlimited'} flights, ${(p.profileJson as any).travelEndurance?.maxArrivalDriveHrs || 'unlimited'}hrs drive
 - Deal-breakers: ${((p.profileJson as any).vetoes || []).join(', ')}
 - Family dynamics: ${(p.profileJson as any).togetherness}/100 (togetherness preference)
+- Flexibility score: ${(p.profileJson as any).flexibility || 5}/10
 - Special notes: ${(p.profileJson as any).notes || 'None'}
 
-Ensure suggestions honor all vetoes and match the specified preferences.`;
+Ensure suggestions honor all vetoes and match the specified preferences. Consider climate, accessibility, kid needs, and food constraints carefully.`;
 
     const completion = await ai.chat.completions.create(
       {
