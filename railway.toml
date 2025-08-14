@@ -1,0 +1,13 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "cd apps/backend && pnpm start"
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+
+[[services]]
+name = "backend"
+
+[build.environment]
+PRISMA_SCHEMA_PATH = "apps/backend/prisma/schema.prisma"

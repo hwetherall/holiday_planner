@@ -1,0 +1,69 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Environment variables (protect all secrets)
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.staging
+# Allow example files
+!.env.example
+!.env.local.example
+
+# Build outputs
+apps/frontend/.next/
+apps/frontend/.vercel/
+apps/frontend/out/
+apps/backend/dist/
+
+# Testing
+coverage/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# SSL certificates
+*.pem
+*.key
+*.crt
+*.csr
+
+# API keys and secrets (additional protection)
+secrets.json
+config/secrets.json
+*.secret
+
+.vercel

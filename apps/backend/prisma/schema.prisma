@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Group {
+  id        String   @id @default(cuid())
+  code      String   @unique // "A"|"B"|"C"|"D"
+  name      String
+  pinHash   String
+  homeAirports String // CSV of IATA codes
+  members   String   // CSV of names
+  profiles  Profile[]
+  rankings  Ranking[]
+  candidateSets CandidateSet[]
+}
+
+model Profile {
+  id         String   @id @default(cuid())
+  groupId    String   @unique
+  group      Group    @relation(fields: [groupId], references: [id])
+  profileJson Json
+  updatedAt  DateTime @updatedAt
+}
+
+model CandidateSet {
+  id         String   @id @default(cuid())
+  groupId    String
+  group      Group    @relation(fields: [groupId], references: [id])
+  cardsJson  Json     // {cards: CandidateCard[]}
+  createdAt  DateTime @default(now())
+  rankings   Ranking[]
+}
+
+model Ranking {
+  id              String   @id @default(cuid())
+  groupId         String
+  group           Group    @relation(fields: [groupId], references: [id])
+  candidateSetId  String
+  candidateSet    CandidateSet @relation(fields: [candidateSetId], references: [id])
+  ranking         Json     // { [cardId]: rankNumber }
+  createdAt       DateTime @default(now())
+}
+
+model FinalPlan {
+  id          String   @id @default(cuid())
+  briefJson   Json     // all profiles + rankings snapshot
+  resultJson  Json     // { detectedConflicts, options[3], aggregationNote, nextSteps }
+  createdAt   DateTime @default(now())
+}
+

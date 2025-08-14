@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: 240 4% 97%;
+}
+
+html, body { height: 100%; }
+body { background-color: hsl(var(--bg)); }
+

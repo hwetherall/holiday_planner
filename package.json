@@ -1,0 +1,14 @@
+{
+  "name": "holiday-planner",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "pnpm install && cd apps/backend && pnpm build",
+    "start": "cd apps/backend && pnpm start",
+    "dev": "cd apps/frontend && pnpm dev"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
+
