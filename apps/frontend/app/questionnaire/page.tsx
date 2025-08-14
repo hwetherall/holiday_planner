@@ -46,16 +46,10 @@ const ACCESSIBILITY_NEEDS = [
   'Low-sensory options', 'Accessible transportation'
 ];
 
-const OCCASION_TYPES = [
-  'Birthday', 'Anniversary', 'Family reunion', 'Graduation', 'Retirement',
-  'Honeymoon', 'Babymoon', 'Photoshoot', 'Business/leisure mix', 'Just because',
-  'Holiday celebration', 'Cultural event', 'Sports event', 'Food festival'
-];
-
-const FOOD_CONSTRAINTS = [
-  'Vegetarian', 'Vegan', 'Gluten-free', 'Dairy-free', 'Nut allergies',
-  'Halal', 'Kosher', 'Low-sodium', 'Diabetic-friendly', 'Pescatarian',
-  'Local cuisine focus', 'Fine dining', 'Street food', 'Cooking classes'
+const SPORTING_EVENTS = [
+  'Football/Soccer', 'Tennis', 'Golf', 'Cricket', 'Rugby', 'Baseball', 'Basketball',
+  'Olympics', 'Formula 1', 'Marathon/Running', 'Cycling races', 'Sailing regattas',
+  'Skiing competitions', 'Surfing competitions', 'Rock climbing', 'Swimming'
 ];
 
 const VETO_OPTIONS = [
@@ -77,28 +71,27 @@ export default function Page(){
   const [accommodationPrefs, setAccommodationPrefs] = useState<string[]>([]);
   const [kidNeedsPrefs, setKidNeedsPrefs] = useState<string[]>([]);
   const [accessibilityPrefs, setAccessibilityPrefs] = useState<string[]>([]);
-  const [occasionPrefs, setOccasionPrefs] = useState<string[]>([]);
-  const [foodPrefs, setFoodPrefs] = useState<string[]>([]);
+  const [sportingPrefs, setSportingPrefs] = useState<string[]>([]);
+  const [climatePrefs, setClimatePrefs] = useState<string[]>([]);
   const [adventurousness, setAdventurousness] = useState(3);
   const [budgetRange, setBudgetRange] = useState(3);
   const [groupDynamics, setGroupDynamics] = useState(3);
   const [flexibility, setFlexibility] = useState(5);
 
   // Calculate progress
-  const totalSections = 12;
+  const totalSections = 10;
   const completedSections = [
     profile.tripLengthNights > 0,
     availableMonths.length > 0,
-    profile.climatePref,
+    climatePrefs.length > 0,
     profile.travelEndurance.maxFlightHrs || profile.travelEndurance.maxFlightCount || profile.travelEndurance.maxArrivalDriveHrs,
     accommodationPrefs.length > 0,
     kidNeedsPrefs.length > 0,
     accessibilityPrefs.length > 0,
-    occasionPrefs.length > 0,
-    foodPrefs.length > 0,
     adventurousness > 0,
     locationPrefs.length > 0,
     activityPrefs.length > 0,
+    sportingPrefs.length > 0,
     budgetRange > 0,
     groupDynamics > 0,
     flexibility > 0,
@@ -118,8 +111,8 @@ export default function Page(){
       setAccommodationPrefs(p.accommodationStyles || []);
       setKidNeedsPrefs(p.kidNeeds || []);
       setAccessibilityPrefs(p.accessibilityNeeds || []);
-      setOccasionPrefs(p.occasionGoals || []);
-      setFoodPrefs(p.foodConstraints || []);
+      setSportingPrefs(p.activities?.filter((a: string) => SPORTING_EVENTS.includes(a)) || []);
+      setClimatePrefs(p.climatePref ? [p.climatePref] : []);
       setAdventurousness(p.riskTolerance ? Math.round(p.riskTolerance / 20) : 3);
       setBudgetRange(p.budgetPerAdultUSD ? Math.min(5, Math.max(1, Math.round(p.budgetPerAdultUSD / 1000))) : 3);
       setGroupDynamics(p.togetherness ? Math.round(p.togetherness / 20) : 3);
@@ -164,15 +157,15 @@ export default function Page(){
     );
   }
 
-  function toggleOccasion(occasion: string) {
-    setOccasionPrefs(prev => 
-      prev.includes(occasion) ? prev.filter(o => o !== occasion) : [...prev, occasion]
+  function toggleSporting(sport: string) {
+    setSportingPrefs(prev => 
+      prev.includes(sport) ? prev.filter(s => s !== sport) : [...prev, sport]
     );
   }
 
-  function toggleFood(food: string) {
-    setFoodPrefs(prev => 
-      prev.includes(food) ? prev.filter(f => f !== food) : [...prev, food]
+  function toggleClimate(climate: string) {
+    setClimatePrefs(prev => 
+      prev.includes(climate) ? prev.filter(c => c !== climate) : [...prev, climate]
     );
   }
 
@@ -206,10 +199,10 @@ export default function Page(){
       occasionGoals: availableMonths,
       accommodationRank: locationPrefs,
       accommodationStyles: accommodationPrefs,
-      activities: activityPrefs,
+      activities: [...activityPrefs, ...sportingPrefs],
       kidNeeds: kidNeedsPrefs,
       accessibilityNeeds: accessibilityPrefs,
-      foodConstraints: foodPrefs,
+      climatePref: climatePrefs[0] || 'mild', // Keep first preference for backward compatibility
       riskTolerance: adventurousness * 20,
       budgetPerAdultUSD: budgetRange * 1000,
       togetherness: groupDynamics * 20,
@@ -297,28 +290,30 @@ export default function Page(){
         <section className="holiday-card rounded-2xl p-6 section-fade-in">
           <div className="flex items-center gap-3 mb-4">
             <span className="text-2xl">🌤️</span>
-            <label className="text-lg font-semibold">Climate preference</label>
+            <label className="text-lg font-semibold">Climate preferences (Select all that appeal)</label>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             {[
               { value: 'warm', label: 'Warm (25-35°C)', desc: 'Tropical, Mediterranean', emoji: '☀️' },
               { value: 'mild', label: 'Mild (15-25°C)', desc: 'Spring/autumn weather', emoji: '🌤️' },
               { value: 'cool', label: 'Cool (5-15°C)', desc: 'Mountain, northern climates', emoji: '🌥️' },
               { value: 'snow', label: 'Snow', desc: 'Winter sports, alpine', emoji: '❄️' }
             ].map(climate => (
-              <div
-                key={climate.value}
-                className={`climate-card ${profile.climatePref === climate.value ? 'selected' : ''}`}
-                onClick={() => setProfile({...profile, climatePref: climate.value as any})}
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">{climate.emoji}</span>
+              <label key={climate.value} className="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                <input 
+                  type="checkbox" 
+                  checked={climatePrefs.includes(climate.value)}
+                  onChange={() => toggleClimate(climate.value)}
+                  className="holiday-checkbox"
+                />
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">{climate.emoji}</span>
                   <div>
                     <div className="font-medium">{climate.label}</div>
                     <div className="text-sm text-gray-500">{climate.desc}</div>
                   </div>
                 </div>
-              </div>
+              </label>
             ))}
           </div>
         </section>
@@ -441,47 +436,9 @@ export default function Page(){
           </div>
         </section>
 
-        {/* Occasion/Purpose */}
-        <section className="holiday-card rounded-2xl p-6 section-fade-in">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="text-2xl">🎉</span>
-            <label className="text-lg font-semibold">Occasion or purpose (Select all that apply)</label>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            {OCCASION_TYPES.map(occasion => (
-              <label key={occasion} className="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                <input 
-                  type="checkbox" 
-                  checked={occasionPrefs.includes(occasion)}
-                  onChange={() => toggleOccasion(occasion)}
-                  className="holiday-checkbox"
-                />
-                <span className="text-sm">{occasion}</span>
-              </label>
-            ))}
-          </div>
-        </section>
 
-        {/* Food Constraints */}
-        <section className="holiday-card rounded-2xl p-6 section-fade-in">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="text-2xl">🍽️</span>
-            <label className="text-lg font-semibold">Food constraints & preferences (Select all that apply)</label>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            {FOOD_CONSTRAINTS.map(food => (
-              <label key={food} className="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                <input 
-                  type="checkbox" 
-                  checked={foodPrefs.includes(food)}
-                  onChange={() => toggleFood(food)}
-                  className="holiday-checkbox"
-                />
-                <span className="text-sm">{food}</span>
-              </label>
-            ))}
-          </div>
-        </section>
+
+
 
         {/* Adventurousness Scale */}
         <section className="holiday-card rounded-2xl p-6 section-fade-in">
@@ -542,6 +499,27 @@ export default function Page(){
                   className="holiday-checkbox"
                 />
                 <span className="text-sm">{activity}</span>
+              </label>
+            ))}
+          </div>
+        </section>
+
+        {/* Sporting Events */}
+        <section className="holiday-card rounded-2xl p-6 section-fade-in">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-2xl">⚽</span>
+            <label className="text-lg font-semibold">What sporting events interest you? (Select all that apply)</label>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {SPORTING_EVENTS.map(sport => (
+              <label key={sport} className="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                <input 
+                  type="checkbox" 
+                  checked={sportingPrefs.includes(sport)}
+                  onChange={() => toggleSporting(sport)}
+                  className="holiday-checkbox"
+                />
+                <span className="text-sm">{sport}</span>
               </label>
             ))}
           </div>

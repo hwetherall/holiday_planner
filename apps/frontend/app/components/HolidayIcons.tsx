@@ -6,7 +6,7 @@ interface HolidayIconProps {
 }
 
 export const HolidayIcon: React.FC<HolidayIconProps> = ({ type, className = "holiday-icon" }) => {
-  const icons: { [key: string]: JSX.Element } = {
+  const icons: { [key: string]: React.ReactElement } = {
     // Climate icons
     warm: (
       <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
