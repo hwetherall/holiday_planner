@@ -1,4 +1,4 @@
-export type GroupId = "A"|"B"|"C"|"D";
+export type GroupId = "HARRY"|"KYLENE"|"OLIVIA"|"BEN"|"VICTORIA"|"JIM"|"DEB"|"JOHNNO";
 
 export interface GroupProfile {
   groupId: GroupId;

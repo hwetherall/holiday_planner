@@ -7,7 +7,7 @@ import { HolidayEmoji } from '../components/HolidayIcons';
 import { HolidayProgress } from '../components/ProgressIndicator';
 
 const blank: GroupProfile = {
-  groupId: 'A', members: [], homeAirports: [], budgetFlex: 'soft',
+  groupId: 'HARRY', members: [], homeAirports: [], budgetFlex: 'soft',
   earliestStart: '', earliestFlexDays: 0, latestEnd: '', latestFlexDays: 0,
   tripLengthNights: 7, pace: 'balanced', accommodationRank: [], accommodationStyles: [], activities: [],
   vetoes: [], mustHaves: [], travelEndurance: {}, kidNeeds: [], accessibilityNeeds: [],
@@ -34,17 +34,7 @@ const ACCOMMODATION_STYLES = [
   'Cabin/lodge', 'Bed & breakfast', 'Villa', 'Hostel', 'Glamping', 'Farm stay'
 ];
 
-const KID_NEEDS = [
-  'Cot/crib', 'High chair', 'Stroller-friendly', 'Step-free access', 'Quiet area for naps',
-  'Childcare services', 'Kids club', 'Safe play areas', 'Baby changing facilities',
-  'Child-friendly dining', 'Car seat availability'
-];
 
-const ACCESSIBILITY_NEEDS = [
-  'Wheelchair accessible', 'Step-free access', 'Elevator access', 'Accessible bathrooms',
-  'Hearing assistance', 'Visual assistance', 'Mobility equipment', 'Quiet spaces',
-  'Low-sensory options', 'Accessible transportation'
-];
 
 const SPORTING_EVENTS = [
   'Football/Soccer', 'Tennis', 'Golf', 'Cricket', 'Rugby', 'Baseball', 'Basketball',
@@ -69,8 +59,7 @@ export default function Page(){
   const [locationPrefs, setLocationPrefs] = useState<string[]>([]);
   const [activityPrefs, setActivityPrefs] = useState<string[]>([]);
   const [accommodationPrefs, setAccommodationPrefs] = useState<string[]>([]);
-  const [kidNeedsPrefs, setKidNeedsPrefs] = useState<string[]>([]);
-  const [accessibilityPrefs, setAccessibilityPrefs] = useState<string[]>([]);
+
   const [sportingPrefs, setSportingPrefs] = useState<string[]>([]);
   const [climatePrefs, setClimatePrefs] = useState<string[]>([]);
   const [adventurousness, setAdventurousness] = useState(3);
@@ -79,19 +68,18 @@ export default function Page(){
   const [flexibility, setFlexibility] = useState(5);
 
   // Calculate progress
-  const totalSections = 10;
+  const totalSections = 8;
   const completedSections = [
     profile.tripLengthNights > 0,
     availableMonths.length > 0,
     climatePrefs.length > 0,
     profile.travelEndurance.maxFlightHrs || profile.travelEndurance.maxFlightCount || profile.travelEndurance.maxArrivalDriveHrs,
     accommodationPrefs.length > 0,
-    kidNeedsPrefs.length > 0,
-    accessibilityPrefs.length > 0,
     adventurousness > 0,
     locationPrefs.length > 0,
     activityPrefs.length > 0,
-    sportingPrefs.length > 0,
+    // Only count sporting preferences if Festivals/Events is selected
+    activityPrefs.includes('Festivals/Events') ? sportingPrefs.length > 0 : true,
     budgetRange > 0,
     groupDynamics > 0,
     flexibility > 0,
@@ -109,8 +97,6 @@ export default function Page(){
       setLocationPrefs(p.accommodationRank || []);
       setActivityPrefs(p.activities || []);
       setAccommodationPrefs(p.accommodationStyles || []);
-      setKidNeedsPrefs(p.kidNeeds || []);
-      setAccessibilityPrefs(p.accessibilityNeeds || []);
       setSportingPrefs(p.activities?.filter((a: string) => SPORTING_EVENTS.includes(a)) || []);
       setClimatePrefs(p.climatePref ? [p.climatePref] : []);
       setAdventurousness(p.riskTolerance ? Math.round(p.riskTolerance / 20) : 3);
@@ -134,9 +120,16 @@ export default function Page(){
   }
 
   function toggleActivity(activity: string) {
-    setActivityPrefs(prev => 
-      prev.includes(activity) ? prev.filter(a => a !== activity) : [...prev, activity]
-    );
+    setActivityPrefs(prev => {
+      const newPrefs = prev.includes(activity) ? prev.filter(a => a !== activity) : [...prev, activity];
+      
+      // Clear sporting preferences if Festivals/Events is deselected
+      if (activity === 'Festivals/Events' && !newPrefs.includes('Festivals/Events')) {
+        setSportingPrefs([]);
+      }
+      
+      return newPrefs;
+    });
   }
 
   function toggleAccommodation(accommodation: string) {
@@ -145,17 +138,7 @@ export default function Page(){
     );
   }
 
-  function toggleKidNeed(need: string) {
-    setKidNeedsPrefs(prev => 
-      prev.includes(need) ? prev.filter(n => n !== need) : [...prev, need]
-    );
-  }
 
-  function toggleAccessibility(need: string) {
-    setAccessibilityPrefs(prev => 
-      prev.includes(need) ? prev.filter(n => n !== need) : [...prev, need]
-    );
-  }
 
   function toggleSporting(sport: string) {
     setSportingPrefs(prev => 
@@ -200,8 +183,6 @@ export default function Page(){
       accommodationRank: locationPrefs,
       accommodationStyles: accommodationPrefs,
       activities: [...activityPrefs, ...sportingPrefs],
-      kidNeeds: kidNeedsPrefs,
-      accessibilityNeeds: accessibilityPrefs,
       climatePref: climatePrefs[0] || 'mild', // Keep first preference for backward compatibility
       riskTolerance: adventurousness * 20,
       budgetPerAdultUSD: budgetRange * 1000,
@@ -394,47 +375,7 @@ export default function Page(){
           </div>
         </section>
 
-        {/* Kid Needs */}
-        <section className="holiday-card rounded-2xl p-6 section-fade-in">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="text-2xl">👶</span>
-            <label className="text-lg font-semibold">Kid/Accessibility needs (Select all that apply)</label>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            {KID_NEEDS.map(need => (
-              <label key={need} className="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                <input 
-                  type="checkbox" 
-                  checked={kidNeedsPrefs.includes(need)}
-                  onChange={() => toggleKidNeed(need)}
-                  className="holiday-checkbox"
-                />
-                <span className="text-sm">{need}</span>
-              </label>
-            ))}
-          </div>
-        </section>
 
-        {/* Accessibility Needs */}
-        <section className="holiday-card rounded-2xl p-6 section-fade-in">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="text-2xl">♿</span>
-            <label className="text-lg font-semibold">Accessibility requirements (Select all that apply)</label>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            {ACCESSIBILITY_NEEDS.map(need => (
-              <label key={need} className="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                <input 
-                  type="checkbox" 
-                  checked={accessibilityPrefs.includes(need)}
-                  onChange={() => toggleAccessibility(need)}
-                  className="holiday-checkbox"
-                />
-                <span className="text-sm">{need}</span>
-              </label>
-            ))}
-          </div>
-        </section>
 
 
 
@@ -504,26 +445,28 @@ export default function Page(){
           </div>
         </section>
 
-        {/* Sporting Events */}
-        <section className="holiday-card rounded-2xl p-6 section-fade-in">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="text-2xl">⚽</span>
-            <label className="text-lg font-semibold">What sporting events interest you? (Select all that apply)</label>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            {SPORTING_EVENTS.map(sport => (
-              <label key={sport} className="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                <input 
-                  type="checkbox" 
-                  checked={sportingPrefs.includes(sport)}
-                  onChange={() => toggleSporting(sport)}
-                  className="holiday-checkbox"
-                />
-                <span className="text-sm">{sport}</span>
-              </label>
-            ))}
-          </div>
-        </section>
+        {/* Sporting Events - Only show when Festivals/Events is selected */}
+        {activityPrefs.includes('Festivals/Events') && (
+          <section className="holiday-card rounded-2xl p-6 section-fade-in">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="text-2xl">⚽</span>
+              <label className="text-lg font-semibold">What sporting events interest you? (Select all that apply)</label>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {SPORTING_EVENTS.map(sport => (
+                <label key={sport} className="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <input 
+                    type="checkbox" 
+                    checked={sportingPrefs.includes(sport)}
+                    onChange={() => toggleSporting(sport)}
+                    className="holiday-checkbox"
+                  />
+                  <span className="text-sm">{sport}</span>
+                </label>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Budget Range */}
         <section className="holiday-card rounded-2xl p-6 section-fade-in">

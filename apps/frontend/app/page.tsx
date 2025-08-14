@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { api, setToken } from '../lib/api';
 
 export default function Page(){
-  const [groupCode, setGroupCode] = useState('A');
+  const [groupCode, setGroupCode] = useState('HARRY');
   const [pin, setPin] = useState('');
   const [token, setTok] = useState<string|undefined>();
 
@@ -35,16 +35,20 @@ export default function Page(){
           
           <div className="space-y-6">
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">Select Your Group</label>
+              <label className="block text-sm font-medium text-gray-700">Select Your Name</label>
               <select 
                 value={groupCode} 
                 onChange={e=>setGroupCode(e.target.value)} 
                 className="holiday-input w-full"
               >
-                <option value="A">A — Harry, Ky, Occi</option>
-                <option value="B">B — Mum + Johno</option>
-                <option value="C">C — Liv + Ben</option>
-                <option value="D">D — Victoria + Jim</option>
+                <option value="HARRY">Harry (Denver)</option>
+                <option value="KYLENE">Kylene (Denver)</option>
+                <option value="OLIVIA">Olivia (Melbourne)</option>
+                <option value="BEN">Ben (Melbourne)</option>
+                <option value="VICTORIA">Victoria (Melbourne)</option>
+                <option value="JIM">Jim (Melbourne)</option>
+                <option value="DEB">Deb (Sydney)</option>
+                <option value="JOHNNO">Johnno (Sydney)</option>
               </select>
             </div>
             

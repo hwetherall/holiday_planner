@@ -4,28 +4,33 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main(){
-  const groups = [
-    { code: 'A', name: 'Harry + Ky + Occi', pin: '3112' },
-    { code: 'B', name: 'Mum + Johno',       pin: '1002' },
-    { code: 'C', name: 'Liv + Ben',         pin: '2810' },
-    { code: 'D', name: 'Victoria + Jim',    pin: '0602' },
+  const users = [
+    { code: 'HARRY', name: 'Harry', pin: '3112', homeAirports: 'DEN' },
+    { code: 'KYLENE', name: 'Kylene', pin: '2801', homeAirports: 'DEN' },
+    { code: 'OLIVIA', name: 'Olivia', pin: '2810', homeAirports: 'MEL' },
+    { code: 'BEN', name: 'Ben', pin: '2811', homeAirports: 'MEL' },
+    { code: 'VICTORIA', name: 'Victoria', pin: '0602', homeAirports: 'MEL' },
+    { code: 'JIM', name: 'Jim', pin: '2704', homeAirports: 'MEL' },
+    { code: 'DEB', name: 'Deb', pin: '1002', homeAirports: 'SYD' },
+    { code: 'JOHNNO', name: 'Johnno', pin: '0706', homeAirports: 'SYD' },
   ];
-  for(const g of groups){
+  
+  for(const user of users){
     await prisma.group.upsert({
-      where: { code: g.code },
+      where: { code: user.code },
       create: {
-        code: g.code,
-        name: g.name,
-        pinHash: await bcrypt.hash(g.pin, 10),
-        homeAirports: g.code==='A'?'DEN':'SYD,MEL',
-        members: g.name
+        code: user.code,
+        name: user.name,
+        pinHash: await bcrypt.hash(user.pin, 10),
+        homeAirports: user.homeAirports,
+        members: user.name
       },
       update: {
         // Ensure pins can be corrected by re-running the seed after editing values
-        name: g.name,
-        pinHash: await bcrypt.hash(g.pin, 10),
-        homeAirports: g.code==='A'?'DEN':'SYD,MEL',
-        members: g.name
+        name: user.name,
+        pinHash: await bcrypt.hash(user.pin, 10),
+        homeAirports: user.homeAirports,
+        members: user.name
       }
     });
   }
