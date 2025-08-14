@@ -66,6 +66,11 @@ export default function Page(){
   const [budgetRange, setBudgetRange] = useState(3);
   const [groupDynamics, setGroupDynamics] = useState(3);
   const [flexibility, setFlexibility] = useState(5);
+  const [sharedVetoOptions, setSharedVetoOptions] = useState<string[]>([]);
+  const [sharedActivityOptions, setSharedActivityOptions] = useState<string[]>([]);
+  const [sharedLocationOptions, setSharedLocationOptions] = useState<string[]>([]);
+  const [customActivity, setCustomActivity] = useState('');
+  const [customLocation, setCustomLocation] = useState('');
 
   // Calculate progress
   const totalSections = 8;
@@ -104,6 +109,21 @@ export default function Page(){
       setGroupDynamics(p.togetherness ? Math.round(p.togetherness / 20) : 3);
       setFlexibility(p.flexibility || 5);
     }
+    
+    // Fetch shared options
+    try {
+      const vetoResponse = await api.get('/veto-options');
+      setSharedVetoOptions(vetoResponse.data.vetoOptions || []);
+      
+      const activityResponse = await api.get('/activity-options');
+      setSharedActivityOptions(activityResponse.data.activityOptions || []);
+      
+      const locationResponse = await api.get('/location-options');
+      setSharedLocationOptions(locationResponse.data.locationOptions || []);
+    } catch (error) {
+      console.error('Failed to fetch shared options:', error);
+    }
+    
     setLoading(false);
   })(); },[]);
 
@@ -159,13 +179,72 @@ export default function Page(){
     }));
   }
 
-  function addCustomVeto() {
+  async function addCustomVeto() {
     if (customVeto.trim()) {
+      const trimmedVeto = customVeto.trim();
+      
+      // Add to local profile
       setProfile(prev => ({
         ...prev,
-        vetoes: [...prev.vetoes, customVeto.trim()]
+        vetoes: [...prev.vetoes, trimmedVeto]
       }));
+      
+      // Add to shared veto options
+      try {
+        await api.post('/veto-options', { vetoText: trimmedVeto });
+        // Refresh shared veto options
+        const vetoResponse = await api.get('/veto-options');
+        setSharedVetoOptions(vetoResponse.data.vetoOptions || []);
+      } catch (error) {
+        console.error('Failed to add shared veto option:', error);
+        // Still add to local profile even if shared save fails
+      }
+      
       setCustomVeto('');
+    }
+  }
+
+  async function addCustomActivity() {
+    if (customActivity.trim()) {
+      const trimmedActivity = customActivity.trim();
+      
+      // Add to local preferences
+      setActivityPrefs(prev => [...prev, trimmedActivity]);
+      
+      // Add to shared activity options
+      try {
+        await api.post('/activity-options', { activityText: trimmedActivity });
+        // Refresh shared activity options
+        const activityResponse = await api.get('/activity-options');
+        setSharedActivityOptions(activityResponse.data.activityOptions || []);
+      } catch (error) {
+        console.error('Failed to add shared activity option:', error);
+        // Still add to local preferences even if shared save fails
+      }
+      
+      setCustomActivity('');
+    }
+  }
+
+  async function addCustomLocation() {
+    if (customLocation.trim()) {
+      const trimmedLocation = customLocation.trim();
+      
+      // Add to local preferences
+      setLocationPrefs(prev => [...prev, trimmedLocation]);
+      
+      // Add to shared location options
+      try {
+        await api.post('/location-options', { locationText: trimmedLocation });
+        // Refresh shared location options
+        const locationResponse = await api.get('/location-options');
+        setSharedLocationOptions(locationResponse.data.locationOptions || []);
+      } catch (error) {
+        console.error('Failed to add shared location option:', error);
+        // Still add to local preferences even if shared save fails
+      }
+      
+      setCustomLocation('');
     }
   }
 
@@ -410,7 +489,7 @@ export default function Page(){
             <label className="text-lg font-semibold">What locations appeal to you? (Select all that interest you)</label>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            {LOCATION_TYPES.map(location => (
+            {[...LOCATION_TYPES, ...sharedLocationOptions].map(location => (
               <label key={location} className="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50 transition-colors">
                 <input 
                   type="checkbox" 
@@ -422,6 +501,21 @@ export default function Page(){
               </label>
             ))}
           </div>
+          <div className="flex gap-3 mt-4">
+            <input 
+              value={customLocation}
+              onChange={e=>setCustomLocation(e.target.value)}
+              placeholder="Add your own location type..."
+              className="holiday-input flex-1"
+              onKeyPress={e => e.key === 'Enter' && addCustomLocation()}
+            />
+            <button 
+              onClick={addCustomLocation}
+              className="holiday-button px-6"
+            >
+              Add
+            </button>
+          </div>
         </section>
 
         {/* Activity Preferences */}
@@ -431,7 +525,7 @@ export default function Page(){
             <label className="text-lg font-semibold">What activities interest you? (Select all that apply)</label>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            {ACTIVITY_OPTIONS.map(activity => (
+            {[...ACTIVITY_OPTIONS, ...sharedActivityOptions].map(activity => (
               <label key={activity} className="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50 transition-colors">
                 <input 
                   type="checkbox" 
@@ -442,6 +536,21 @@ export default function Page(){
                 <span className="text-sm">{activity}</span>
               </label>
             ))}
+          </div>
+          <div className="flex gap-3 mt-4">
+            <input 
+              value={customActivity}
+              onChange={e=>setCustomActivity(e.target.value)}
+              placeholder="Add your own activity..."
+              className="holiday-input flex-1"
+              onKeyPress={e => e.key === 'Enter' && addCustomActivity()}
+            />
+            <button 
+              onClick={addCustomActivity}
+              className="holiday-button px-6"
+            >
+              Add
+            </button>
           </div>
         </section>
 
@@ -542,7 +651,7 @@ export default function Page(){
             <label className="text-lg font-semibold">Deal-breakers (Select any that apply)</label>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            {VETO_OPTIONS.map(veto => (
+            {[...VETO_OPTIONS, ...sharedVetoOptions].map(veto => (
               <label key={veto} className="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50 transition-colors">
                 <input 
                   type="checkbox" 

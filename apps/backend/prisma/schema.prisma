@@ -53,3 +53,24 @@ model FinalPlan {
   createdAt   DateTime @default(now())
 }
 
+model SharedVetoOption {
+  id          String   @id @default(cuid())
+  vetoText    String   @unique
+  addedBy     String   // group code of who added it
+  createdAt   DateTime @default(now())
+}
+
+model SharedActivityOption {
+  id          String   @id @default(cuid())
+  activityText String  @unique
+  addedBy     String   // group code of who added it
+  createdAt   DateTime @default(now())
+}
+
+model SharedLocationOption {
+  id          String   @id @default(cuid())
+  locationText String  @unique
+  addedBy     String   // group code of who added it
+  createdAt   DateTime @default(now())
+}
+

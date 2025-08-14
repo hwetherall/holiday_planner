@@ -70,6 +70,144 @@ app.get('/profile/me', auth, async (req: Request, res: Response) => {
   res.json({ profile: p?.profileJson ?? null });
 });
 
+// --- Shared Veto Options ---
+app.get('/veto-options', async (req: Request, res: Response) => {
+  try {
+    const sharedVetos = await prisma.sharedVetoOption.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
+    res.json({ vetoOptions: sharedVetos.map(v => v.vetoText) });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch veto options' });
+  }
+});
+
+app.post('/veto-options', auth, async (req: Request, res: Response) => {
+  try {
+    const { vetoText } = req.body as { vetoText: string };
+    const groupCode = (req as any).user.groupCode as string;
+    
+    if (!vetoText || vetoText.trim().length === 0) {
+      return res.status(400).json({ error: 'Veto text is required' });
+    }
+    
+    const trimmedVeto = vetoText.trim();
+    
+    // Check if it already exists
+    const existing = await prisma.sharedVetoOption.findUnique({
+      where: { vetoText: trimmedVeto }
+    });
+    
+    if (existing) {
+      return res.status(409).json({ error: 'Veto option already exists' });
+    }
+    
+    // Add the new veto option
+    const newVeto = await prisma.sharedVetoOption.create({
+      data: {
+        vetoText: trimmedVeto,
+        addedBy: groupCode
+      }
+    });
+    
+    res.json({ vetoOption: newVeto });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to add veto option' });
+  }
+});
+
+// --- Shared Activity Options ---
+app.get('/activity-options', async (req: Request, res: Response) => {
+  try {
+    const sharedActivities = await prisma.sharedActivityOption.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
+    res.json({ activityOptions: sharedActivities.map(a => a.activityText) });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch activity options' });
+  }
+});
+
+app.post('/activity-options', auth, async (req: Request, res: Response) => {
+  try {
+    const { activityText } = req.body as { activityText: string };
+    const groupCode = (req as any).user.groupCode as string;
+    
+    if (!activityText || activityText.trim().length === 0) {
+      return res.status(400).json({ error: 'Activity text is required' });
+    }
+    
+    const trimmedActivity = activityText.trim();
+    
+    // Check if it already exists
+    const existing = await prisma.sharedActivityOption.findUnique({
+      where: { activityText: trimmedActivity }
+    });
+    
+    if (existing) {
+      return res.status(409).json({ error: 'Activity option already exists' });
+    }
+    
+    // Add the new activity option
+    const newActivity = await prisma.sharedActivityOption.create({
+      data: {
+        activityText: trimmedActivity,
+        addedBy: groupCode
+      }
+    });
+    
+    res.json({ activityOption: newActivity });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to add activity option' });
+  }
+});
+
+// --- Shared Location Options ---
+app.get('/location-options', async (req: Request, res: Response) => {
+  try {
+    const sharedLocations = await prisma.sharedLocationOption.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
+    res.json({ locationOptions: sharedLocations.map(l => l.locationText) });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch location options' });
+  }
+});
+
+app.post('/location-options', auth, async (req: Request, res: Response) => {
+  try {
+    const { locationText } = req.body as { locationText: string };
+    const groupCode = (req as any).user.groupCode as string;
+    
+    if (!locationText || locationText.trim().length === 0) {
+      return res.status(400).json({ error: 'Location text is required' });
+    }
+    
+    const trimmedLocation = locationText.trim();
+    
+    // Check if it already exists
+    const existing = await prisma.sharedLocationOption.findUnique({
+      where: { locationText: trimmedLocation }
+    });
+    
+    if (existing) {
+      return res.status(409).json({ error: 'Location option already exists' });
+    }
+    
+    // Add the new location option
+    const newLocation = await prisma.sharedLocationOption.create({
+      data: {
+        locationText: trimmedLocation,
+        addedBy: groupCode
+      }
+    });
+    
+    res.json({ locationOption: newLocation });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to add location option' });
+  }
+});
+
 // --- Cards: generate 5 ---
 app.post('/cards/generate', auth, async (req: Request, res: Response) => {
   console.log('=== CARDS GENERATE ENDPOINT HIT ===');
