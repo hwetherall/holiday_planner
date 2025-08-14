@@ -11,3 +11,6 @@ name = "backend"
 
 [build.environment]
 PRISMA_SCHEMA_PATH = "apps/backend/prisma/schema.prisma"
+
+[nixpacks]
+startCmd = "cd apps/backend && pnpm start"
