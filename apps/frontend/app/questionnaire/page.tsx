@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
 import type { GroupProfile } from '@fhp/shared';
 import HolidayLoading from '../components/HolidayLoading';
+import { HolidayEmoji } from '../components/HolidayIcons';
+import { HolidayProgress } from '../components/ProgressIndicator';
 
 const blank: GroupProfile = {
   groupId: 'A', members: [], homeAirports: [], budgetFlex: 'soft',
@@ -81,6 +83,29 @@ export default function Page(){
   const [budgetRange, setBudgetRange] = useState(3);
   const [groupDynamics, setGroupDynamics] = useState(3);
   const [flexibility, setFlexibility] = useState(5);
+
+  // Calculate progress
+  const totalSections = 12;
+  const completedSections = [
+    profile.tripLengthNights > 0,
+    availableMonths.length > 0,
+    profile.climatePref,
+    profile.travelEndurance.maxFlightHrs || profile.travelEndurance.maxFlightCount || profile.travelEndurance.maxArrivalDriveHrs,
+    accommodationPrefs.length > 0,
+    kidNeedsPrefs.length > 0,
+    accessibilityPrefs.length > 0,
+    occasionPrefs.length > 0,
+    foodPrefs.length > 0,
+    adventurousness > 0,
+    locationPrefs.length > 0,
+    activityPrefs.length > 0,
+    budgetRange > 0,
+    groupDynamics > 0,
+    flexibility > 0,
+    profile.vetoes.length > 0
+  ].filter(Boolean).length;
+  
+  const progress = Math.round((completedSections / totalSections) * 100);
 
   useEffect(()=>{ (async()=>{
     const r = await api.get('/profile/me');
@@ -207,380 +232,457 @@ export default function Page(){
   if(generating) return <HolidayLoading />;
 
   return (
-    <main className="max-w-2xl mx-auto py-8 space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold">Step 1 — Family Holiday Questionnaire</h1>
-        <p className="opacity-70 mt-2">Help us find the perfect holiday for everyone. Keep it quick; you can edit later.</p>
-      </div>
-
-      {/* Trip Length Slider */}
-      <section className="space-y-3">
-        <label className="block text-sm font-medium">Trip length: {profile.tripLengthNights} nights</label>
-        <input 
-          type="range" 
-          min="4" 
-          max="14" 
-          value={profile.tripLengthNights} 
-          onChange={e=>setProfile({...profile, tripLengthNights: Number(e.target.value)})} 
-          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-        />
-        <div className="flex justify-between text-xs text-gray-500">
-          <span>4 days</span>
-          <span>14 days</span>
-        </div>
-      </section>
-
-      {/* Available Months */}
-      <section className="space-y-3">
-        <label className="block text-sm font-medium">When are you available? (Select all that work)</label>
-        <div className="grid grid-cols-3 gap-2">
-          {MONTHS.map(month => (
-            <label key={month} className="flex items-center space-x-2 cursor-pointer">
-              <input 
-                type="checkbox" 
-                checked={availableMonths.includes(month)}
-                onChange={() => toggleMonth(month)}
-                className="rounded"
-              />
-              <span className="text-sm">{month}</span>
-            </label>
-          ))}
-        </div>
-      </section>
-
-      {/* Climate Preference */}
-      <section className="space-y-3">
-        <label className="block text-sm font-medium">Climate preference</label>
-        <div className="grid grid-cols-2 gap-2">
-          {[
-            { value: 'warm', label: 'Warm (25-35°C)', desc: 'Tropical, Mediterranean' },
-            { value: 'mild', label: 'Mild (15-25°C)', desc: 'Spring/autumn weather' },
-            { value: 'cool', label: 'Cool (5-15°C)', desc: 'Mountain, northern climates' },
-            { value: 'snow', label: 'Snow', desc: 'Winter sports, alpine' }
-          ].map(climate => (
-            <label key={climate.value} className="flex items-start space-x-2 cursor-pointer p-2 border rounded hover:bg-gray-50">
-              <input 
-                type="radio" 
-                name="climate"
-                checked={profile.climatePref === climate.value}
-                onChange={() => setProfile({...profile, climatePref: climate.value as any})}
-                className="mt-1"
-              />
-              <div>
-                <div className="text-sm font-medium">{climate.label}</div>
-                <div className="text-xs text-gray-500">{climate.desc}</div>
-              </div>
-            </label>
-          ))}
-        </div>
-      </section>
-
-      {/* Flight/Transfer Tolerance */}
-      <section className="space-y-3">
-        <label className="block text-sm font-medium">Flight & transfer tolerance</label>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-xs text-gray-600 mb-1">Maximum flight hours</label>
-            <input 
-              type="number" 
-              min="1" 
-              max="24" 
-              value={profile.travelEndurance.maxFlightHrs || ''} 
-              onChange={e=>setProfile({
-                ...profile, 
-                travelEndurance: {...profile.travelEndurance, maxFlightHrs: Number(e.target.value)}
-              })} 
-              placeholder="e.g., 8"
-              className="w-full border rounded p-2"
-            />
+    <div className="min-h-screen holiday-pattern">
+      {/* Floating holiday elements */}
+      <div className="floating-element" style={{ top: '10%', left: '5%' }}>🏖️</div>
+      <div className="floating-element" style={{ top: '20%', right: '10%' }}>✈️</div>
+      <div className="floating-element" style={{ bottom: '15%', left: '15%' }}>🏔️</div>
+      
+      <main className="max-w-4xl mx-auto py-8 px-4 space-y-8">
+        {/* Header with progress */}
+        <div className="holiday-card rounded-2xl p-8 section-fade-in">
+          <div className="text-center mb-6">
+            <div className="text-4xl mb-4">🎉</div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-orange-500 bg-clip-text text-transparent">
+              Step 1 — Family Holiday Questionnaire
+            </h1>
+            <p className="text-lg opacity-70 mt-3">
+              Help us find the perfect holiday for everyone. Keep it quick; you can edit later.
+            </p>
           </div>
-          <div>
-            <label className="block text-xs text-gray-600 mb-1">Maximum number of flights</label>
-            <input 
-              type="number" 
-              min="1" 
-              max="5" 
-              value={profile.travelEndurance.maxFlightCount || ''} 
-              onChange={e=>setProfile({
-                ...profile, 
-                travelEndurance: {...profile.travelEndurance, maxFlightCount: Number(e.target.value)}
-              })} 
-              placeholder="e.g., 2"
-              className="w-full border rounded p-2"
-            />
+          
+          <HolidayProgress progress={progress} />
+        </div>
+
+        {/* Trip Length Slider */}
+        <section className="holiday-card rounded-2xl p-6 section-fade-in">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-2xl">📅</span>
+            <label className="text-lg font-semibold">Trip length: {profile.tripLengthNights} nights</label>
           </div>
-          <div>
-            <label className="block text-xs text-gray-600 mb-1">Maximum arrival drive (hours)</label>
-            <input 
-              type="number" 
-              min="0" 
-              max="8" 
-              value={profile.travelEndurance.maxArrivalDriveHrs || ''} 
-              onChange={e=>setProfile({
-                ...profile, 
-                travelEndurance: {...profile.travelEndurance, maxArrivalDriveHrs: Number(e.target.value)}
-              })} 
-              placeholder="e.g., 2"
-              className="w-full border rounded p-2"
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* Accommodation Style */}
-      <section className="space-y-3">
-        <label className="block text-sm font-medium">Accommodation style (Select all that appeal)</label>
-        <div className="grid grid-cols-2 gap-2">
-          {ACCOMMODATION_STYLES.map(style => (
-            <label key={style} className="flex items-center space-x-2 cursor-pointer">
-              <input 
-                type="checkbox" 
-                checked={accommodationPrefs.includes(style)}
-                onChange={() => toggleAccommodation(style)}
-                className="rounded"
-              />
-              <span className="text-sm">{style}</span>
-            </label>
-          ))}
-        </div>
-      </section>
-
-      {/* Kid Needs */}
-      <section className="space-y-3">
-        <label className="block text-sm font-medium">Kid/Accessibility needs (Select all that apply)</label>
-        <div className="grid grid-cols-2 gap-2">
-          {KID_NEEDS.map(need => (
-            <label key={need} className="flex items-center space-x-2 cursor-pointer">
-              <input 
-                type="checkbox" 
-                checked={kidNeedsPrefs.includes(need)}
-                onChange={() => toggleKidNeed(need)}
-                className="rounded"
-              />
-              <span className="text-sm">{need}</span>
-            </label>
-          ))}
-        </div>
-      </section>
-
-      {/* Accessibility Needs */}
-      <section className="space-y-3">
-        <label className="block text-sm font-medium">Accessibility requirements (Select all that apply)</label>
-        <div className="grid grid-cols-2 gap-2">
-          {ACCESSIBILITY_NEEDS.map(need => (
-            <label key={need} className="flex items-center space-x-2 cursor-pointer">
-              <input 
-                type="checkbox" 
-                checked={accessibilityPrefs.includes(need)}
-                onChange={() => toggleAccessibility(need)}
-                className="rounded"
-              />
-              <span className="text-sm">{need}</span>
-            </label>
-          ))}
-        </div>
-      </section>
-
-      {/* Occasion/Purpose */}
-      <section className="space-y-3">
-        <label className="block text-sm font-medium">Occasion or purpose (Select all that apply)</label>
-        <div className="grid grid-cols-2 gap-2">
-          {OCCASION_TYPES.map(occasion => (
-            <label key={occasion} className="flex items-center space-x-2 cursor-pointer">
-              <input 
-                type="checkbox" 
-                checked={occasionPrefs.includes(occasion)}
-                onChange={() => toggleOccasion(occasion)}
-                className="rounded"
-              />
-              <span className="text-sm">{occasion}</span>
-            </label>
-          ))}
-        </div>
-      </section>
-
-      {/* Food Constraints */}
-      <section className="space-y-3">
-        <label className="block text-sm font-medium">Food constraints & preferences (Select all that apply)</label>
-        <div className="grid grid-cols-2 gap-2">
-          {FOOD_CONSTRAINTS.map(food => (
-            <label key={food} className="flex items-center space-x-2 cursor-pointer">
-              <input 
-                type="checkbox" 
-                checked={foodPrefs.includes(food)}
-                onChange={() => toggleFood(food)}
-                className="rounded"
-              />
-              <span className="text-sm">{food}</span>
-            </label>
-          ))}
-        </div>
-      </section>
-
-      {/* Adventurousness Scale */}
-      <section className="space-y-3">
-        <label className="block text-sm font-medium">Holiday style: {['Super relaxed', 'Mostly relaxed', 'Balanced', 'Quite adventurous', 'Very adventurous'][adventurousness - 1]}</label>
-        <input 
-          type="range" 
-          min="1" 
-          max="5" 
-          value={adventurousness} 
-          onChange={e=>setAdventurousness(Number(e.target.value))} 
-          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-        />
-        <div className="flex justify-between text-xs text-gray-500">
-          <span>Relaxation</span>
-          <span>Adventure</span>
-        </div>
-      </section>
-
-      {/* Location Preferences */}
-      <section className="space-y-3">
-        <label className="block text-sm font-medium">What locations appeal to you? (Select all that interest you)</label>
-        <div className="grid grid-cols-2 gap-2">
-          {LOCATION_TYPES.map(location => (
-            <label key={location} className="flex items-center space-x-2 cursor-pointer">
-              <input 
-                type="checkbox" 
-                checked={locationPrefs.includes(location)}
-                onChange={() => toggleLocation(location)}
-                className="rounded"
-              />
-              <span className="text-sm">{location}</span>
-            </label>
-          ))}
-        </div>
-      </section>
-
-      {/* Activity Preferences */}
-      <section className="space-y-3">
-        <label className="block text-sm font-medium">What activities interest you? (Select all that apply)</label>
-        <div className="grid grid-cols-2 gap-2">
-          {ACTIVITY_OPTIONS.map(activity => (
-            <label key={activity} className="flex items-center space-x-2 cursor-pointer">
-              <input 
-                type="checkbox" 
-                checked={activityPrefs.includes(activity)}
-                onChange={() => toggleActivity(activity)}
-                className="rounded"
-              />
-              <span className="text-sm">{activity}</span>
-            </label>
-          ))}
-        </div>
-      </section>
-
-      {/* Budget Range */}
-      <section className="space-y-3">
-        <label className="block text-sm font-medium">Budget range per adult: {['Budget-friendly ($1-2k)', 'Moderate ($2-3k)', 'Comfortable ($3-4k)', 'Premium ($4-5k)', 'Luxury ($5k+)'][budgetRange - 1]}</label>
-        <input 
-          type="range" 
-          min="1" 
-          max="5" 
-          value={budgetRange} 
-          onChange={e=>setBudgetRange(Number(e.target.value))} 
-          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-        />
-        <div className="flex justify-between text-xs text-gray-500">
-          <span>Budget</span>
-          <span>Luxury</span>
-        </div>
-      </section>
-
-      {/* Group Dynamics */}
-      <section className="space-y-3">
-        <label className="block text-sm font-medium">Family time preference: {['Lots of independent time', 'Some separate activities', 'Mix of together/apart', 'Mostly together', 'Always together'][groupDynamics - 1]}</label>
-        <input 
-          type="range" 
-          min="1" 
-          max="5" 
-          value={groupDynamics} 
-          onChange={e=>setGroupDynamics(Number(e.target.value))} 
-          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-        />
-        <div className="flex justify-between text-xs text-gray-500">
-          <span>Independent</span>
-          <span>Together</span>
-        </div>
-      </section>
-
-      {/* Flexibility Score */}
-      <section className="space-y-3">
-        <label className="block text-sm font-medium">Flexibility score: {['Very rigid', 'Somewhat rigid', 'Moderate', 'Somewhat flexible', 'Very flexible'][Math.round(flexibility / 2) - 1]}</label>
-        <input 
-          type="range" 
-          min="1" 
-          max="10" 
-          value={flexibility} 
-          onChange={e=>setFlexibility(Number(e.target.value))} 
-          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-        />
-        <div className="flex justify-between text-xs text-gray-500">
-          <span>Rigid</span>
-          <span>Flexible</span>
-        </div>
-        <p className="text-xs text-gray-600">How willing are you to compromise on preferences?</p>
-      </section>
-
-      {/* Vetoes */}
-      <section className="space-y-3">
-        <label className="block text-sm font-medium">Deal-breakers (Select any that apply)</label>
-        <div className="grid grid-cols-1 gap-2">
-          {VETO_OPTIONS.map(veto => (
-            <label key={veto} className="flex items-center space-x-2 cursor-pointer">
-              <input 
-                type="checkbox" 
-                checked={profile.vetoes.includes(veto)}
-                onChange={() => toggleVeto(veto)}
-                className="rounded"
-              />
-              <span className="text-sm">{veto}</span>
-            </label>
-          ))}
-        </div>
-        <div className="flex gap-2 mt-3">
           <input 
-            value={customVeto}
-            onChange={e=>setCustomVeto(e.target.value)}
-            placeholder="Add your own deal-breaker..."
-            className="border rounded p-2 flex-1"
-            onKeyPress={e => e.key === 'Enter' && addCustomVeto()}
+            type="range" 
+            min="4" 
+            max="14" 
+            value={profile.tripLengthNights} 
+            onChange={e=>setProfile({...profile, tripLengthNights: Number(e.target.value)})} 
+            className="holiday-slider w-full"
           />
-          <button 
-            onClick={addCustomVeto}
-            className="px-3 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-          >
-            Add
-          </button>
-        </div>
-        {profile.vetoes.filter(v => !VETO_OPTIONS.includes(v)).map(veto => (
-          <div key={veto} className="flex items-center justify-between bg-gray-100 p-2 rounded">
-            <span className="text-sm">{veto}</span>
+          <div className="flex justify-between text-sm text-gray-500 mt-2">
+            <span>4 days</span>
+            <span>14 days</span>
+          </div>
+        </section>
+
+        {/* Available Months */}
+        <section className="holiday-card rounded-2xl p-6 section-fade-in">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-2xl">🗓️</span>
+            <label className="text-lg font-semibold">When are you available? (Select all that work)</label>
+          </div>
+          <div className="month-grid">
+            {MONTHS.map(month => (
+              <div
+                key={month}
+                className={`month-item ${availableMonths.includes(month) ? 'selected' : ''}`}
+                onClick={() => toggleMonth(month)}
+              >
+                {month}
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Climate Preference */}
+        <section className="holiday-card rounded-2xl p-6 section-fade-in">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-2xl">🌤️</span>
+            <label className="text-lg font-semibold">Climate preference</label>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            {[
+              { value: 'warm', label: 'Warm (25-35°C)', desc: 'Tropical, Mediterranean', emoji: '☀️' },
+              { value: 'mild', label: 'Mild (15-25°C)', desc: 'Spring/autumn weather', emoji: '🌤️' },
+              { value: 'cool', label: 'Cool (5-15°C)', desc: 'Mountain, northern climates', emoji: '🌥️' },
+              { value: 'snow', label: 'Snow', desc: 'Winter sports, alpine', emoji: '❄️' }
+            ].map(climate => (
+              <div
+                key={climate.value}
+                className={`climate-card ${profile.climatePref === climate.value ? 'selected' : ''}`}
+                onClick={() => setProfile({...profile, climatePref: climate.value as any})}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">{climate.emoji}</span>
+                  <div>
+                    <div className="font-medium">{climate.label}</div>
+                    <div className="text-sm text-gray-500">{climate.desc}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Flight/Transfer Tolerance */}
+        <section className="holiday-card rounded-2xl p-6 section-fade-in">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-2xl">✈️</span>
+            <label className="text-lg font-semibold">Flight & transfer tolerance</label>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Maximum flight hours</label>
+              <input 
+                type="number" 
+                min="1" 
+                max="24" 
+                value={profile.travelEndurance.maxFlightHrs || ''} 
+                onChange={e=>setProfile({
+                  ...profile, 
+                  travelEndurance: {...profile.travelEndurance, maxFlightHrs: Number(e.target.value)}
+                })} 
+                placeholder="e.g., 8"
+                className="holiday-input w-full"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Maximum number of flights</label>
+              <input 
+                type="number" 
+                min="1" 
+                max="5" 
+                value={profile.travelEndurance.maxFlightCount || ''} 
+                onChange={e=>setProfile({
+                  ...profile, 
+                  travelEndurance: {...profile.travelEndurance, maxFlightCount: Number(e.target.value)}
+                })} 
+                placeholder="e.g., 2"
+                className="holiday-input w-full"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Maximum arrival drive (hours)</label>
+              <input 
+                type="number" 
+                min="0" 
+                max="8" 
+                value={profile.travelEndurance.maxArrivalDriveHrs || ''} 
+                onChange={e=>setProfile({
+                  ...profile, 
+                  travelEndurance: {...profile.travelEndurance, maxArrivalDriveHrs: Number(e.target.value)}
+                })} 
+                placeholder="e.g., 2"
+                className="holiday-input w-full"
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Accommodation Style */}
+        <section className="holiday-card rounded-2xl p-6 section-fade-in">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-2xl">🏨</span>
+            <label className="text-lg font-semibold">Accommodation style (Select all that appeal)</label>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {ACCOMMODATION_STYLES.map(style => (
+              <label key={style} className="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                <input 
+                  type="checkbox" 
+                  checked={accommodationPrefs.includes(style)}
+                  onChange={() => toggleAccommodation(style)}
+                  className="holiday-checkbox"
+                />
+                <span className="text-sm">{style}</span>
+              </label>
+            ))}
+          </div>
+        </section>
+
+        {/* Kid Needs */}
+        <section className="holiday-card rounded-2xl p-6 section-fade-in">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-2xl">👶</span>
+            <label className="text-lg font-semibold">Kid/Accessibility needs (Select all that apply)</label>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {KID_NEEDS.map(need => (
+              <label key={need} className="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                <input 
+                  type="checkbox" 
+                  checked={kidNeedsPrefs.includes(need)}
+                  onChange={() => toggleKidNeed(need)}
+                  className="holiday-checkbox"
+                />
+                <span className="text-sm">{need}</span>
+              </label>
+            ))}
+          </div>
+        </section>
+
+        {/* Accessibility Needs */}
+        <section className="holiday-card rounded-2xl p-6 section-fade-in">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-2xl">♿</span>
+            <label className="text-lg font-semibold">Accessibility requirements (Select all that apply)</label>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {ACCESSIBILITY_NEEDS.map(need => (
+              <label key={need} className="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                <input 
+                  type="checkbox" 
+                  checked={accessibilityPrefs.includes(need)}
+                  onChange={() => toggleAccessibility(need)}
+                  className="holiday-checkbox"
+                />
+                <span className="text-sm">{need}</span>
+              </label>
+            ))}
+          </div>
+        </section>
+
+        {/* Occasion/Purpose */}
+        <section className="holiday-card rounded-2xl p-6 section-fade-in">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-2xl">🎉</span>
+            <label className="text-lg font-semibold">Occasion or purpose (Select all that apply)</label>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {OCCASION_TYPES.map(occasion => (
+              <label key={occasion} className="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                <input 
+                  type="checkbox" 
+                  checked={occasionPrefs.includes(occasion)}
+                  onChange={() => toggleOccasion(occasion)}
+                  className="holiday-checkbox"
+                />
+                <span className="text-sm">{occasion}</span>
+              </label>
+            ))}
+          </div>
+        </section>
+
+        {/* Food Constraints */}
+        <section className="holiday-card rounded-2xl p-6 section-fade-in">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-2xl">🍽️</span>
+            <label className="text-lg font-semibold">Food constraints & preferences (Select all that apply)</label>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {FOOD_CONSTRAINTS.map(food => (
+              <label key={food} className="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                <input 
+                  type="checkbox" 
+                  checked={foodPrefs.includes(food)}
+                  onChange={() => toggleFood(food)}
+                  className="holiday-checkbox"
+                />
+                <span className="text-sm">{food}</span>
+              </label>
+            ))}
+          </div>
+        </section>
+
+        {/* Adventurousness Scale */}
+        <section className="holiday-card rounded-2xl p-6 section-fade-in">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-2xl">🏃‍♂️</span>
+            <label className="text-lg font-semibold">
+              Holiday style: {['Super relaxed', 'Mostly relaxed', 'Balanced', 'Quite adventurous', 'Very adventurous'][adventurousness - 1]}
+            </label>
+          </div>
+          <input 
+            type="range" 
+            min="1" 
+            max="5" 
+            value={adventurousness} 
+            onChange={e=>setAdventurousness(Number(e.target.value))} 
+            className="holiday-slider w-full"
+          />
+          <div className="flex justify-between text-sm text-gray-500 mt-2">
+            <span>Relaxation</span>
+            <span>Adventure</span>
+          </div>
+        </section>
+
+        {/* Location Preferences */}
+        <section className="holiday-card rounded-2xl p-6 section-fade-in">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-2xl">🗺️</span>
+            <label className="text-lg font-semibold">What locations appeal to you? (Select all that interest you)</label>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {LOCATION_TYPES.map(location => (
+              <label key={location} className="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                <input 
+                  type="checkbox" 
+                  checked={locationPrefs.includes(location)}
+                  onChange={() => toggleLocation(location)}
+                  className="holiday-checkbox"
+                />
+                <span className="text-sm">{location}</span>
+              </label>
+            ))}
+          </div>
+        </section>
+
+        {/* Activity Preferences */}
+        <section className="holiday-card rounded-2xl p-6 section-fade-in">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-2xl">🎯</span>
+            <label className="text-lg font-semibold">What activities interest you? (Select all that apply)</label>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {ACTIVITY_OPTIONS.map(activity => (
+              <label key={activity} className="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                <input 
+                  type="checkbox" 
+                  checked={activityPrefs.includes(activity)}
+                  onChange={() => toggleActivity(activity)}
+                  className="holiday-checkbox"
+                />
+                <span className="text-sm">{activity}</span>
+              </label>
+            ))}
+          </div>
+        </section>
+
+        {/* Budget Range */}
+        <section className="holiday-card rounded-2xl p-6 section-fade-in">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-2xl">💰</span>
+            <label className="text-lg font-semibold">
+              Budget range per adult: {['Budget-friendly ($1-2k)', 'Moderate ($2-3k)', 'Comfortable ($3-4k)', 'Premium ($4-5k)', 'Luxury ($5k+)'][budgetRange - 1]}
+            </label>
+          </div>
+          <input 
+            type="range" 
+            min="1" 
+            max="5" 
+            value={budgetRange} 
+            onChange={e=>setBudgetRange(Number(e.target.value))} 
+            className="holiday-slider w-full"
+          />
+          <div className="flex justify-between text-sm text-gray-500 mt-2">
+            <span>Budget</span>
+            <span>Luxury</span>
+          </div>
+        </section>
+
+        {/* Group Dynamics */}
+        <section className="holiday-card rounded-2xl p-6 section-fade-in">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-2xl">👨‍👩‍👧‍👦</span>
+            <label className="text-lg font-semibold">
+              Family time preference: {['Lots of independent time', 'Some separate activities', 'Mix of together/apart', 'Mostly together', 'Always together'][groupDynamics - 1]}
+            </label>
+          </div>
+          <input 
+            type="range" 
+            min="1" 
+            max="5" 
+            value={groupDynamics} 
+            onChange={e=>setGroupDynamics(Number(e.target.value))} 
+            className="holiday-slider w-full"
+          />
+          <div className="flex justify-between text-sm text-gray-500 mt-2">
+            <span>Independent</span>
+            <span>Together</span>
+          </div>
+        </section>
+
+        {/* Flexibility Score */}
+        <section className="holiday-card rounded-2xl p-6 section-fade-in">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-2xl">🎭</span>
+            <label className="text-lg font-semibold">
+              Flexibility score: {['Very rigid', 'Somewhat rigid', 'Moderate', 'Somewhat flexible', 'Very flexible'][Math.round(flexibility / 2) - 1]}
+            </label>
+          </div>
+          <input 
+            type="range" 
+            min="1" 
+            max="10" 
+            value={flexibility} 
+            onChange={e=>setFlexibility(Number(e.target.value))} 
+            className="holiday-slider w-full"
+          />
+          <div className="flex justify-between text-sm text-gray-500 mt-2">
+            <span>Rigid</span>
+            <span>Flexible</span>
+          </div>
+          <p className="text-sm text-gray-600 mt-2">How willing are you to compromise on preferences?</p>
+        </section>
+
+        {/* Vetoes */}
+        <section className="holiday-card rounded-2xl p-6 section-fade-in">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-2xl">🚫</span>
+            <label className="text-lg font-semibold">Deal-breakers (Select any that apply)</label>
+          </div>
+          <div className="grid grid-cols-1 gap-3">
+            {VETO_OPTIONS.map(veto => (
+              <label key={veto} className="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                <input 
+                  type="checkbox" 
+                  checked={profile.vetoes.includes(veto)}
+                  onChange={() => toggleVeto(veto)}
+                  className="holiday-checkbox"
+                />
+                <span className="text-sm">{veto}</span>
+              </label>
+            ))}
+          </div>
+          <div className="flex gap-3 mt-4">
+            <input 
+              value={customVeto}
+              onChange={e=>setCustomVeto(e.target.value)}
+              placeholder="Add your own deal-breaker..."
+              className="holiday-input flex-1"
+              onKeyPress={e => e.key === 'Enter' && addCustomVeto()}
+            />
             <button 
-              onClick={() => toggleVeto(veto)}
-              className="text-red-500 hover:text-red-700 text-sm"
+              onClick={addCustomVeto}
+              className="holiday-button px-6"
             >
-              Remove
+              Add
             </button>
           </div>
-        ))}
-      </section>
+          {profile.vetoes.filter(v => !VETO_OPTIONS.includes(v)).map(veto => (
+            <div key={veto} className="flex items-center justify-between bg-gray-100 p-3 rounded-lg mt-3">
+              <span className="text-sm">{veto}</span>
+              <button 
+                onClick={() => toggleVeto(veto)}
+                className="text-red-500 hover:text-red-700 text-sm font-medium"
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+        </section>
 
-      {/* Free-form Notes */}
-      <section className="space-y-3">
-        <label className="block text-sm font-medium">Additional notes or special requirements</label>
-        <textarea 
-          value={profile.notes || ''} 
-          onChange={e=>setProfile({...profile, notes: e.target.value})}
-          placeholder="Anything else we should consider? Special occasions, accessibility needs, dietary requirements..."
-          className="border rounded p-3 w-full h-24 resize-none"
-        />
-      </section>
+        {/* Free-form Notes */}
+        <section className="holiday-card rounded-2xl p-6 section-fade-in">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-2xl">📝</span>
+            <label className="text-lg font-semibold">Additional notes or special requirements</label>
+          </div>
+          <textarea 
+            value={profile.notes || ''} 
+            onChange={e=>setProfile({...profile, notes: e.target.value})}
+            placeholder="Anything else we should consider? Special occasions, accessibility needs, dietary requirements..."
+            className="holiday-input w-full h-32 resize-none"
+          />
+        </section>
 
-      <button onClick={save} className="w-full rounded-xl px-4 py-3 bg-emerald-600 text-white font-medium hover:bg-emerald-700">
-        Save & Continue → Generate Holiday Ideas
-      </button>
-    </main>
+        {/* Save Button */}
+        <div className="text-center section-fade-in">
+          <button onClick={save} className="holiday-button text-lg px-8 py-4">
+            🎉 Save & Continue → Generate Holiday Ideas
+          </button>
+        </div>
+      </main>
+    </div>
   );
 }
 
